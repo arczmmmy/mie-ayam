@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order</title>
+    <link rel="stylesheet" href="css/sty_order.css" />
+    <style>
+      /* Additional styles for the Home button */
+      #home-button {
+        margin-bottom: 20px;
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      #home-button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <button type="button" id="home-button">Home</button>
+      <h1>Form Pemesanan</h1>
+      <form id="order-form">
+        <label for="customer-name">Nama</label>
+        <input type="text" id="customer-name" name="customer-name" required />
+
+        <label for="customer-address">Alamat</label>
+        <textarea
+          id="customer-address"
+          name="customer-address"
+          required
+        ></textarea>
+
+        <label for="customer-phone">Nomor Telepon</label>
+        <input type="tel" id="customer-phone" name="customer-phone" required />
+
+        <label for="order-type">Tipe Pesanan</label>
+        <select id="order-type" name="order-type" required>
+          <option value="Dine-in">Dine-in</option>
+          <option value="Takeaway">Takeaway</option>
+        </select>
+
+        <label for="payment-method">Metode Pembayaran</label>
+        <select id="payment-method" name="payment-method" required>
+          <option value="TUNAI">TUNAI</option>
+          <option value="COD">COD</option>
+        </select>
+
+        <h2>Daftar Belanjaan</h2>
+        <div id="products-container">
+          <!-- Initially empty, products will be added here -->
+        </div>
+
+        <button type="button" id="add-product">Tambah Pesanan</button>
+        <h3>Total: <span id="total-price">Rp0</span></h3>
+
+        <input type="submit" value="Pesan Sekarang" />
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const productsContainer = document.getElementById("products-container");
+        const addProductButton = document.getElementById("add-product");
+        const totalPriceElement = document.getElementById("total-price");
+        const homeButton = document.getElementById("home-button");
+
+        homeButton.addEventListener("click", () => {
+          window.location.href = "index.html";
+        });
+
+        function updateTotalPrice() {
+          let totalPrice = 0;
+          const productFields =
+            productsContainer.querySelectorAll(".product-field");
+          productFields.forEach((field) => {
+            const quantity = field.querySelector(".product-quantity").value;
+            const price = field
+              .querySelector(".product-name")
+              .selectedOptions[0].getAttribute("data-price");
+            const subtotal = quantity * price;
+            field.querySelector(".product-price").textContent = `Rp${parseInt(
+              price
+            ).toLocaleString()}`;
+            field.querySelector(
+              ".product-subtotal"
+            ).textContent = `Subtotal: Rp${parseInt(
+              subtotal
+            ).toLocaleString()}`;
+            totalPrice += subtotal;
+          });
+          totalPriceElement.textContent = `Rp${parseInt(
+            totalPrice
+          ).toLocaleString()}`;
+        }
+
+        function addProductField() {
+          const productField = document.createElement("div");
+          productField.classList.add("product-field");
+
+          productField.innerHTML = `
+                    <select class="product-name" required>
+                        <option value="" disabled selected>Pilih Produk</option>
+                        <option value="Mie Ayam Biasa" data-price="11000">Mie Ayam Biasa - Rp11,000</option>
+                        <option value="Mie Ayam Bakso" data-price="14000">Mie Ayam Bakso - Rp14,000</option>
+                        <option value="Mie Ayam Ceker" data-price="14000">Mie Ayam Ceker - Rp14,000</option>
+                        <option value="Mie Ayam Bakso Ceker" data-price="16000">Mie Ayam Bakso Ceker - Rp16,000</option>
+                        <option value="Mie Ayam Bakso Pangsit" data-price="16000">Mie Ayam Bakso Pangsit - Rp16,000</option>
+                        <option value="Mie Ayam Bakso Komplit" data-price="18000">Mie Ayam Bakso Komplit - Rp18,000</option>
+                        <option value="Es Jeruk" data-price="5000">Es Jeruk - Rp5,000</option>
+                        <option value="Es Teh" data-price="3000">Es Teh - Rp3,000</option>
+                        <option value="Aqua" data-price="3000">Aqua - Rp3,000</option>
+                    </select>
+                    <input type="number" class="product-quantity" min="1" value="1" required>
+                    <span class="product-price"></span>
+                    <span class="product-subtotal"></span>
+                    <button type="button" class="remove-product">x</button>
+                `;
+
+          productsContainer.appendChild(productField);
+
+          productField
+            .querySelector(".product-name")
+            .addEventListener("change", updateTotalPrice);
+          productField
+            .querySelector(".product-quantity")
+            .addEventListener("input", updateTotalPrice);
+          productField
+            .querySelector(".remove-product")
+            .addEventListener("click", () => {
+              productsContainer.removeChild(productField);
+              updateTotalPrice();
+            });
+
+          updateTotalPrice();
+        }
+
+        addProductButton.addEventListener("click", addProductField);
+
+        document
+          .getElementById("order-form")
+          .addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const customerName = document.getElementById("customer-name").value;
+            const customerAddress =
+              document.getElementById("customer-address").value;
+            const customerPhone =
+              document.getElementById("customer-phone").value;
+            const orderType = document.getElementById("order-type").value;
+            const paymentMethod =
+              document.getElementById("payment-method").value;
+
+            const productFields =
+              productsContainer.querySelectorAll(".product-field");
+            const items = [];
+
+            productFields.forEach((field) => {
+              const product = field.querySelector(".product-name").value;
+              const quantity = field.querySelector(".product-quantity").value;
+              const price = field
+                .querySelector(".product-name")
+                .selectedOptions[0].getAttribute("data-price");
+              items.push({ product, quantity, price });
+            });
+
+            let paymentStatus;
+            if (paymentMethod === "TUNAI") {
+              paymentStatus = "TUNAI";
+            } else if (paymentMethod === "COD") {
+              paymentStatus = "COD";
+            }
+
+            const order = {
+              orderId: Date.now(),
+              customer: customerName,
+              address: customerAddress,
+              phone: customerPhone,
+              type: orderType,
+              paymentMethod: paymentMethod,
+              items: items,
+              dateTime: new Date().toLocaleString(),
+              paymentStatus: paymentStatus,
+              totalPrice: totalPriceElement.textContent,
+            };
+
+            let orders = JSON.parse(localStorage.getItem("orders")) || [];
+            orders.push(order);
+            localStorage.setItem("orders", JSON.stringify(orders));
+
+            alert("Order submitted successfully!");
+            this.reset();
+            productsContainer.innerHTML = "";
+            updateTotalPrice();
+          });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="css/sty_admin.css">
+    <style>
+        /* Additional styles for the Clear Data button */
+        #clear-data-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #clear-data-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Admin Menu</h2>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="#orders">Orders</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <h1>Selamat Datang di Dashboard Admin!</h1>
+        <p>Select an option from the menu to get started.</p>
+        <h2>Orders</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Date & Time</th>
+                    <th>Alamat</th>
+                    <th>Phone</th>
+                    <th>Tipe Pesanan</th>
+                    <th>Payment Method</th>
+                    <th>Total Harga</th>
+                    <th>Payment Status</th>
+                </tr>
+            </thead>
+            <tbody id="orders-body">
+            </tbody>
+        </table>
+    </div>
+
+    <button id="clear-data-button">Clear Data</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const orders = JSON.parse(localStorage.getItem('orders')) || [];
+            const ordersBody = document.getElementById('orders-body');
+
+            orders.forEach(order => {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${order.orderId}</td>
+                    <td>${order.customer}</td>
+                    <td>${order.items.map(item => `${item.product} (${item.quantity})`).join(', ')}</td>
+                    <td>${order.dateTime}</td>
+                    <td>${order.address}</td>
+                    <td>${order.phone}</td>
+                    <td>${order.type}</td>
+                    <td>${order.paymentMethod}</td>
+                    <td>Rp${order.totalPrice.toLocaleString()}</td>
+                    <td>
+                        ${order.paymentMethod === 'COD' ?  `
+                        <select onchange="updatePaymentStatus(this.value, '${order.orderId}')">
+                            <option value="Belum Bayar" ${order.paymentStatus === 'Belum Bayar' ? 'selected' : ''}>Belum Bayar</option>
+                            <option value="Sudah Bayar" ${order.paymentStatus === 'Sudah Bayar' ? 'selected' : ''}>Sudah Bayar</option>
+                        </select>
+                        ` : (order.paymentMethod === 'TUNAI' ? 'TUNAI' : '')}
+                    </td>
+                `;
+                ordersBody.appendChild(newRow);
+            });
+        });
+
+        function updatePaymentStatus(status, orderId) {
+            const orders = JSON.parse(localStorage.getItem('orders')) || [];
+            const orderIndex = orders.findIndex(order => order.orderId === orderId);
+            if (orderIndex !== -1) {
+                orders[orderIndex].paymentStatus = status;
+                localStorage.setItem('orders', JSON.stringify(orders));
+            }
+        }
+
+        // Function to clear the local storage
+        document.getElementById('clear-data-button').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all data?')) {
+                localStorage.removeItem('orders');
+                alert('All data has been cleared.');
+                location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
